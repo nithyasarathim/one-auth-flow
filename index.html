@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OneAuth SSO — End-to-End Flow</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#14182b;--mute:#5d6580;--line:#dfe3ef;--acc:#0ea5e9;--acc2:#6366f1;--code:#eef1f8;--ok:#16a34a;--warn:#d97706;--node:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1120;--card:#161b30;--ink:#e8ecfa;--mute:#939cc0;--line:#283053;--code:#0d1226;--node:#1b2140}}
+:root[data-theme="dark"]{--bg:#0d1120;--card:#161b30;--ink:#e8ecfa;--mute:#93a0c0;--line:#283053;--code:#0d1226;--node:#1b2140}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:1180px;margin:0 auto;padding:22px 16px 40px}
+h1{font-size:26px;margin:0}h1 span{color:var(--acc)}.sub{color:var(--mute);margin:4px 0 16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit;font-weight:600}
+.tab.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.dia{overflow-x:auto}.dia svg{width:100%;min-width:640px;height:auto;display:block}
+text{fill:var(--ink);font-family:inherit}.ns{fill:var(--mute);font-size:11px}.nt{font-weight:700;font-size:14px}
+.node rect{fill:var(--node);stroke:var(--line);stroke-width:1.5;transition:.25s}.node.a rect{stroke:var(--acc);stroke-width:2.5}
+.base{stroke:var(--line);stroke-width:1.5;stroke-dasharray:4 5;fill:none}
+.act{stroke:var(--acc);stroke-width:3;fill:none;stroke-dasharray:9 6;animation:d .8s linear infinite}
+.via{stroke:var(--acc2);stroke-width:2;fill:none;stroke-dasharray:3 4}
+@keyframes d{to{stroke-dashoffset:-30}}
+.bd circle{fill:var(--acc)}.bd text{fill:#fff;font-weight:700;font-size:13px}
+.ctl{display:flex;gap:8px;align-items:center;margin:12px 0;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 14px;border-radius:9px;cursor:pointer;font:inherit;font-weight:600}
+.btn.p{background:var(--acc2);color:#fff;border-color:var(--acc2)}.pg{color:var(--mute);font-size:13px;margin-left:auto}
+.g{display:grid;grid-template-columns:320px 1fr;gap:14px}@media(max-width:820px){.g{grid-template-columns:1fr}}
+.sl{display:flex;flex-direction:column;gap:6px;max-height:640px;overflow:auto}
+.si{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--card);text-align:left;color:var(--ink);font:inherit}
+.si.on{border-color:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 25%,transparent)}
+.n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--acc);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+.si small{display:block;color:var(--mute);font-family:ui-monospace,Menlo,monospace;font-size:11.5px;word-break:break-all}
+.m{display:inline-block;font:700 11px ui-monospace,Menlo,monospace;padding:2px 7px;border-radius:5px;color:#fff;margin-right:6px;vertical-align:middle}
+.GET{background:#16a34a}.POST{background:#2563eb}.REDIRECT{background:#d97706}.MAIL{background:#9333ea}.PAGE{background:#64748b}
+.dt h2{margin:0 0 6px;font-size:19px}.ep{font:600 13.5px ui-monospace,Menlo,monospace;word-break:break-all}
+.ft{color:var(--mute);margin:6px 0 10px;font-size:13.5px}.ft b{color:var(--ink)}
+.dt h4{margin:14px 0 5px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+pre{margin:0;background:var(--code);border-radius:9px;padding:10px 12px;overflow-x:auto;font:12.5px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word}
+.dt ul{margin:0;padding-left:18px}.dt li{margin:3px 0}code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:12.5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}@media(max-width:820px){.two{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-size:11.5px;text-transform:uppercase}
+td:first-child{font-family:ui-monospace,Menlo,monospace;font-size:12px}.tw{overflow-x:auto}
+h3{margin:0 0 8px;font-size:16px}
+</style></head><body><div class="w">
+<h1><span>One</span>Auth SSO — end-to-end flow</h1>
+<p class="sub">Authorization-code SSO across <b>OneAuth Client</b> (React) · <b>OneAuth API</b> (Express + Redis + MongoDB) · <b>OneMail</b> (signed OTP mailer) · a relying app (<code>oneapp1</code>). Click a step or use ▶.</p>
+<div class="tabs" id="tabs"></div>
+<div class="card dia"><svg id="svg" viewBox="0 0 960 410"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0ea5e9"/></marker></defs><g id="bs"></g><g id="vs"></g><g id="as"></g><g id="ns"></g><g id="bg"></g></svg></div>
+<div class="ctl"><button class="btn" id="pv">◀ Prev</button><button class="btn p" id="pl">▶ Play</button><button class="btn" id="nx">Next ▶</button><span class="pg" id="pg"></span></div>
+<div class="g"><div class="sl" id="sl"></div><div class="card dt" id="dt"></div></div>
+<div class="two">
+<div class="card"><h3>Redis keys (shared state)</h3><div class="tw"><table><tr><th>Key</th><th>Value</th><th>TTL</th></tr>
+<tr><td>session:&lt;64hex&gt;</td><td>userId</td><td>7 d (604800 s)</td></tr>
+<tr><td>auth_code:&lt;64hex&gt;</td><td>{userId, client_id, redirect_uri}</td><td>60 s · single-use</td></tr>
+<tr><td>otp:&lt;email&gt;</td><td>4-digit OTP (sign-up)</td><td>300 s</td></tr>
+<tr><td>verify:&lt;token&gt;</td><td>verified email</td><td>300 s</td></tr>
+<tr><td>resetpwd:otp:&lt;email&gt;</td><td>4-digit OTP</td><td>300 s</td></tr>
+<tr><td>resetpwd:verified:&lt;email&gt;</td><td>"true"</td><td>300 s</td></tr></table></div></div>
+<div class="card"><h3>Trust checks &amp; token anatomy</h3><ul style="margin:0;padding-left:18px;font-size:13.5px">
+<li><b>Access token</b>: JWT HS256 · <code>sub</code>=userId · <code>client_id</code> · <code>type:"access_token"</code> · <code>iss:"one-auth"</code> · <code>aud</code>=client_id · 24 h.</li>
+<li><b>Auth code</b>: 32 random bytes, 60 s, deleted on first exchange (replay-proof).</li>
+<li><b>Allow-lists</b>: <code>client_id</code> and exact <code>redirect_uri</code> checked at <code>/sso/authorize</code> and again at <code>/sso/token</code>.</li>
+<li><b>client_secret</b> never touches the browser — only the relying app's backend calls <code>/sso/token</code>.</li>
+<li><b>API → OneMail</b>: HMAC-SHA256(<code>to:otp:timestamp</code>), max age 2 min (prod) / 10 min (dev), <code>timingSafeEqual</code>.</li>
+<li><b>Rate limits</b> per IP+path per window: authorize 20 · token 20 · userinfo 30 · login 8 · verify-email 3.</li></ul></div></div>
+</div>
+<script>
+const N={br:{x:120,y:200,t:'User Browser',s:'cookies · redirects'},app:{x:120,y:60,t:'Relying App',s:'oneapp1 · :5176 / :6000'},ui:{x:120,y:345,t:'OneAuth Client',s:'React SPA · :5173'},api:{x:480,y:200,t:'OneAuth API',s:'Express · :8000'},rd:{x:840,y:60,t:'Redis',s:'sessions · codes · OTPs'},db:{x:840,y:200,t:'MongoDB',s:'UserAccount'},ml:{x:840,y:345,t:'OneMail',s:'Express · :5002 → SMTP'}};
+const BASE=[['br','app'],['br','ui'],['br','api'],['app','api'],['ui','api'],['api','rd'],['api','db'],['api','ml'],['ml','br']];
+const F={
+sso:{n:'SSO login (main flow)',s:[
+{f:'app',t:'br',m:'REDIRECT',ep:'302 → http://localhost:5173/sso',ti:'Relying app sends user to OneAuth',
+ send:'?client_id=oneapp1\n&redirect_uri=http://localhost:5176/callback\n&state=<random, saved by relying app>',
+ does:['Relying app generates an unguessable <code>state</code> and keeps it (cookie/session) for the CSRF check later.','User is bounced to the OneAuth Client via the browser.'],ret:'Browser navigates to the OneAuth Client'},
+{f:'br',t:'ui',m:'PAGE',ep:'GET /sso  (React route)',ti:'OneAuth Client loads the SSO page',
+ send:'Query string: client_id, redirect_uri, state',
+ does:['<code>/sso</code> is wrapped in <code>ProtectedRoute</code> → session is checked before the page mounts.','<code>sso.page</code> later checks all 3 params exist and <code>redirect_uri</code> is a valid URL.'],ret:'Renders spinner "Authorizing application…"'},
+{f:'ui',t:'api',m:'GET',ep:'/auth/session/validate',via:['rd'],ti:'Is the user already signed in?',
+ send:'Cookie: session_token=<64hex>   (withCredentials: true)',
+ does:['<code>validateSession</code> reads cookie → Redis <code>GET session:&lt;token&gt;</code>.','Found → continue to step 5.  Missing → 401 → step 4.'],ret:'200 {success:true, authenticated:true}  |  401 Unauthorized'},
+{f:'ui',t:'api',m:'POST',ep:'/auth/session/login   (only if 401)',via:['db','rd'],ti:'Login (skipped if session exists)',
+ send:'{ "email": "user@x.com", "password": "••••" }',
+ does:['Mongo <code>findOne({email})</code> → <code>bcrypt.compare</code>.','Create <code>session_token</code> = 32 random bytes; Redis <code>SET session:&lt;token&gt; userId EX 604800</code>.','<code>Set-Cookie: session_token; HttpOnly; Secure; SameSite=Lax; 7d</code>.','Client navigates back to <code>?redirect=/sso?client_id…</code> so SSO params survive login.'],ret:'200 {success:true, message:"Login Successful"}'},
+{f:'ui',t:'api',m:'GET',ep:'/sso/authorize',via:['rd','db'],ti:'Request an authorization code',
+ send:'?client_id=oneapp1&redirect_uri=…/callback&state=…\nCookie: session_token',
+ does:['<code>authorize</code> middleware: Redis session → Mongo <code>findById</code> → sets <code>req.userId</code>.','Requires <code>state</code>; <code>client_id</code> ∈ allowed IDs; <code>redirect_uri</code> ∈ allowed URLs (exact match).','<code>authCode</code> = 32 random bytes hex; Redis <code>SETEX auth_code:&lt;code&gt; 60 {userId, client_id, redirect_uri}</code>.'],ret:'200 {success:true, data:{auth_code, expires_in:60, state}}'},
+{f:'ui',t:'br',m:'REDIRECT',ep:'location.href = redirect_uri',ti:'Browser is sent back to the relying app',
+ send:'http://localhost:5176/callback?code=<auth_code>&state=<state>',
+ does:['Only the short-lived code travels through the browser — never a token or secret.','Any error is shown as "[AUTHORIZATION FAILED] : …" on the OneAuth page instead.'],ret:'Browser leaves OneAuth Client'},
+{f:'br',t:'app',m:'PAGE',ep:'GET /callback?code=…&state=…',ti:'Relying app receives the callback',
+ send:'code, state (query string)',
+ does:['Relying app must compare returned <code>state</code> with the one it saved in step 1 — reject if different.','Hands <code>code</code> to its backend (server-side) for exchange.'],ret:'—  (relying-app code is not part of the zips; behaviour follows the API contract)'},
+{f:'app',t:'api',m:'POST',ep:'/sso/token',via:['rd'],ti:'Server-to-server code → token exchange',
+ send:'{ "grant_type":"authorization_code",\n  "auth_code":"<code>",\n  "client_id":"oneapp1",\n  "client_secret":"<server-side secret>",\n  "redirect_uri":"http://localhost:5176/callback" }',
+ does:['Checks <code>grant_type</code>, all fields, <code>client_id</code> allow-list, then <code>client_secret</code> vs <code>ONE_AUTH_CLIENT_ID_SECRET</code> map.','Redis <code>GET auth_code:&lt;code&gt;</code> → client_id and redirect_uri must match the stored ones.','Redis <code>DEL auth_code</code> (single-use), then <code>jwt.sign</code> (HS256).'],ret:'200 {access_token:"<JWT>", token_type:"Bearer", expires_in:86400}'},
+{f:'app',t:'api',m:'GET',ep:'/sso/userinfo',via:['db'],ti:'Fetch the user profile',
+ send:'Authorization: Bearer <access_token>',
+ does:['<code>jwt.verify</code> with JWT secret; <code>type</code> must be <code>access_token</code>.','Mongo <code>findById(sub)</code> selecting only public fields (no password).'],ret:'200 {success:true, data:{user_id, user:{_id,email,username,description,linkedinUrl,githubUrl,profileUrl}, client_id, issued_at, expires_at}}'},
+{f:'app',t:'br',m:'REDIRECT',ep:'relying app session',ti:'Relying app signs the user in',
+ send:'Set-Cookie (relying app’s own session)',
+ does:['Relying app maps <code>user_id</code>/<code>email</code> to its own account and starts its own session.','Next visit: OneAuth session (7 d) is still valid → steps 3 → 5 run silently = true SSO.'],ret:'User lands inside the relying app, authenticated'}]},
+reg:{n:'Sign-up + OTP mail',s:[
+{f:'ui',t:'api',m:'POST',ep:'/auth/register/verify-email',via:['db','rd'],ti:'Submit email, generate OTP',
+ send:'{ "email": "new@x.com" }',
+ does:['Mongo <code>findOne</code> → 409 "Email already in use" if it exists.','<code>otp</code> = randomInt(1000–9999); <code>timestamp</code> = Date.now().','<code>signature</code> = HMAC-SHA256(secret, <code>email:otp:timestamp</code>).','Redis <code>SET otp:&lt;email&gt; EX 300</code>.'],ret:'200 {success:true, message:"OTP sent successfully"}'},
+{f:'api',t:'ml',m:'POST',ep:'OneMail  /otp/mail/register',ti:'API asks OneMail to send the mail',
+ send:'{ "to":"new@x.com", "otp":"4821",\n  "timestamp":"1767…", "signature":"<hmac hex>" }',
+ does:['OneMail rate-limiter, then <code>signatureValidator</code>: fields are non-empty strings, timestamp not future / not older than 2 min (prod).','Recomputes the HMAC with shared <code>SIGNATURE_SECRET</code>; <code>timingSafeEqual</code> → else 401.','Renders template and sends via nodemailer SMTP.'],ret:'200 {success:true, message:"Mail sent successfully"}'},
+{f:'ml',t:'br',m:'MAIL',ep:'SMTP → user inbox',ti:'User receives the OTP email',
+ send:'Subject: "OneAccounts Registration One Time Password"',does:['User reads the 4-digit code and types it into the OTP step.'],ret:'—'},
+{f:'ui',t:'api',m:'POST',ep:'/auth/register/verify-otp',via:['rd'],ti:'Verify the OTP',
+ send:'{ "email":"new@x.com", "otp":"4821" }',
+ does:['Redis <code>GET otp:&lt;email&gt;</code> → 410 if expired, 400 if wrong.','<code>DEL otp</code>; create <code>verify:&lt;token&gt;</code> = email (EX 300).','<code>Set-Cookie: verified_token</code> (HttpOnly, 5 min).'],ret:'200 {success:true, message:"OTP verified"}'},
+{f:'ui',t:'api',m:'POST',ep:'/auth/register/create-account',via:['rd','db'],ti:'Create account + auto-login',
+ send:'{ "email":"new@x.com", "password":"••••" }\nCookie: verified_token',
+ does:['Redis <code>verify:&lt;token&gt;</code> must equal the email.','<code>bcrypt.hash(pw,10)</code>; Mongo <code>create</code> (username = email prefix).','Delete verify token; create <code>session:&lt;token&gt;</code> + <code>session_token</code> cookie.'],ret:'201 {success:true, message:"Account created successfully"}'}]},
+rst:{n:'Password reset',s:[
+{f:'ui',t:'api',m:'POST',ep:'/auth/password/otp',via:['db','rd'],ti:'Request reset OTP',
+ send:'{ "email":"user@x.com" }',does:['Mongo must contain the user (404 otherwise).','Same signed call to OneMail <code>/otp/mail/forget-password</code>; Redis <code>SET resetpwd:otp:&lt;email&gt; EX 300</code>.'],ret:'200 {success:true, message:"OTP sent successfully"}'},
+{f:'api',t:'ml',m:'POST',ep:'OneMail  /otp/mail/forget-password',ti:'Signed mail request',
+ send:'{ "to", "otp", "timestamp", "signature" }',does:['Identical HMAC + timestamp validation; sends the reset template by SMTP.'],ret:'200 {success:true}'},
+{f:'ui',t:'api',m:'POST',ep:'/auth/password/otp/verify',via:['rd'],ti:'Verify reset OTP',
+ send:'{ "email", "otp" }',does:['Redis compare with <code>resetpwd:otp:&lt;email&gt;</code>; set <code>resetpwd:verified:&lt;email&gt;</code> = "true" (300 s); delete OTP.'],ret:'200 {success:true, message:"OTP verified successfully"}'},
+{f:'ui',t:'api',m:'POST',ep:'/auth/password/reset',via:['rd','db'],ti:'Set the new password',
+ send:'{ "email", "newPassword" }',does:['Requires <code>resetpwd:verified:&lt;email&gt;</code> (403 otherwise).','<code>bcrypt.hash</code> → Mongo save; delete the verified flag.'],ret:'200 {success:true, message:"Password reset successfully"}'}]}};
+const $=i=>document.getElementById(i),W=160,H=56;let fl='sso',cur=0,tm=null;
+function edge(a,b){const A=N[a],B=N[b],dx=B.x-A.x,dy=B.y-A.y,k=Math.min(W/2/Math.abs(dx||1e-6),H/2/Math.abs(dy||1e-6)),g=6;const s=Math.hypot(dx,dy),ux=dx/s,uy=dy/s;
+return[A.x+dx*k+ux*g,A.y+dy*k+uy*g,B.x-dx*k-ux*g,B.y-dy*k-uy*g]}
+const ln=(a,b,c,ex='')=>{const e=edge(a,b);return`<line class="${c}" x1="${e[0]}" y1="${e[1]}" x2="${e[2]}" y2="${e[3]}" ${ex}/>`};
+$('bs').innerHTML=BASE.map(([a,b])=>ln(a,b,'base')).join('');
+function tabs(){$('tabs').innerHTML=Object.entries(F).map(([k,v])=>`<button class="tab ${k==fl?'on':''}" data-k="${k}">${v.n}</button>`).join('');
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{stop();fl=b.dataset.k;cur=0;tabs();list();show()})}
+function list(){$('sl').innerHTML=F[fl].s.map((s,i)=>`<button class="si" data-i="${i}"><span class="n">${i+1}</span><span><b>${s.ti}</b><small><span class="m ${s.m}">${s.m}</span>${s.ep}</small></span></button>`).join('');
+document.querySelectorAll('.si').forEach(b=>b.onclick=()=>{stop();cur=+b.dataset.i;show()})}
+function show(){const S=F[fl].s,s=S[cur];
+$('as').innerHTML=ln(s.f,s.t,'act','marker-end="url(#ar)"');
+$('vs').innerHTML=(s.via||[]).map(v=>ln('api',v,'via')).join('');
+const e=edge(s.f,s.t),mx=(e[0]+e[2])/2,my=(e[1]+e[3])/2;
+$('bg').innerHTML=`<g class="bd"><circle cx="${mx}" cy="${my}" r="13"/><text x="${mx}" y="${my+4.5}" text-anchor="middle">${cur+1}</text></g>`;
+const act=new Set([s.f,s.t,...(s.via||[])]);
+$('ns').innerHTML=Object.entries(N).map(([k,n])=>`<g class="node ${act.has(k)?'a':''}"><rect x="${n.x-W/2}" y="${n.y-H/2}" width="${W}" height="${H}" rx="12"/><text class="nt" x="${n.x}" y="${n.y-3}" text-anchor="middle">${n.t}</text><text class="ns" x="${n.x}" y="${n.y+15}" text-anchor="middle">${n.s}</text></g>`).join('');
+document.querySelectorAll('.si').forEach((b,i)=>b.classList.toggle('on',i==cur));
+$('pg').textContent=`Step ${cur+1} / ${S.length}`;
+$('dt').innerHTML=`<h2>${cur+1}. ${s.ti}</h2><div class="ep"><span class="m ${s.m}">${s.m}</span>${s.ep}</div><div class="ft"><b>${N[s.f].t}</b> → <b>${N[s.t].t}</b>${(s.via||[]).length?' · touches '+s.via.map(v=>'<b>'+N[v].t+'</b>').join(', '):''}</div>
+<h4>Data sent</h4><pre>${s.send.replace(/</g,'&lt;')}</pre><h4>What happens</h4><ul>${s.does.map(d=>`<li>${d}</li>`).join('')}</ul><h4>Response</h4><pre>${s.ret.replace(/</g,'&lt;')}</pre>`}
+function stop(){clearInterval(tm);tm=null;$('pl').textContent='▶ Play'}
+$('pl').onclick=()=>{if(tm)return stop();$('pl').textContent='⏸ Pause';tm=setInterval(()=>{if(cur>=F[fl].s.length-1)return stop();cur++;show()},2600)};
+$('nx').onclick=()=>{stop();cur=Math.min(cur+1,F[fl].s.length-1);show()};
+$('pv').onclick=()=>{stop();cur=Math.max(cur-1,0);show()};
+tabs();list();show();
+</script></body></html>
